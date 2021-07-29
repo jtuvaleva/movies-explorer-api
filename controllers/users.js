@@ -6,12 +6,18 @@ const NotFoundError = require('../errors/not-found-err');
 const BadRequestError = require('../errors/bad-request-err');
 const DuplicatedIdError = require('../errors/duplicated-id-err');
 const AuthError = require('../errors/auth-err');
+const {
+  badRequestUpdateProfileMssg,
+  duplicatedIdErrorMsg,
+  notFoundUserMssg,
+  badRequestErrorMssg,
+} = require('../utils/constants');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
 module.exports.getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
-    .orFail(new NotFoundError('Запрашиваемый пользователь не найден'))
+    .orFail(new NotFoundError(notFoundUserMssg))
     .then((user) => {
       res.send({ data: user });
     })
@@ -43,7 +49,7 @@ module.exports.updateProfile = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные при обновлении профиля'));
+        next(new BadRequestError(badRequestUpdateProfileMssg));
       } else {
         next(err);
       }
@@ -64,9 +70,9 @@ module.exports.createUser = (req, res, next) => {
     }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestError('Неверные данные'));
+        next(new BadRequestError(badRequestErrorMssg));
       } else if (err.name === 'MongoError' && err.code === 11000) {
-        next(new DuplicatedIdError('Пользователь уже существует'));
+        next(new DuplicatedIdError(duplicatedIdErrorMsg));
       } else {
         next(err);
       }

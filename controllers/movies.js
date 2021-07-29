@@ -2,6 +2,10 @@ const BadRequestError = require('../errors/bad-request-err');
 const CastError = require('../errors/cast-err');
 const NotFoundError = require('../errors/not-found-err');
 const Movie = require('../models/movie');
+const {
+  badRequestAddFilmMssg, castErrorMssg,
+  notFoundFilmMssg, deleteSuccessMssg,
+} = require('../utils/constants');
 
 module.exports.getMovies = (req, res, next) => {
   Movie.find({})
@@ -32,7 +36,7 @@ module.exports.addMovie = (req, res, next) => {
     .then((film) => res.send({ film }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные при добавлении фильма'));
+        next(new BadRequestError(badRequestAddFilmMssg));
       } else {
         next(err);
       }
@@ -41,13 +45,13 @@ module.exports.addMovie = (req, res, next) => {
 
 module.exports.deleteMovie = (req, res, next) => {
   Movie.findByIdAndDelete(req.params.movieId)
-    .orFail(new NotFoundError('Фильм с указанным _id не найден'))
+    .orFail(new NotFoundError(notFoundFilmMssg))
     .then(() => {
-      res.send({ message: 'Карточка с фильмом удалена' });
+      res.send({ message: deleteSuccessMssg });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new CastError('Невалидный id'));
+        next(new CastError(castErrorMssg));
       } else {
         next(err);
       }

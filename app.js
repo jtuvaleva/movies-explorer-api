@@ -13,7 +13,9 @@ const { rateLimiter } = require('./middlewares/rateLimiter');
 const { validateSignUp, validateSignIn } = require('./middlewares/validation');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const NotFoundError = require('./errors/not-found-err');
-const { dbName, mongoParams } = require('./utils/constants');
+const {
+  dbName, serverUrl, mongoParams, badRouterMssg,
+} = require('./utils/constants');
 
 const app = express();
 app.use(helmet());
@@ -21,11 +23,11 @@ app.use(cookieParser());
 app.use(cors());
 app.options('*', cors());
 
-const { PORT = 3000, SERVER_URL } = process.env;
+const { PORT = 3000 } = process.env;
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(`mongodb://${SERVER_URL}/${dbName}`, mongoParams);
+    await mongoose.connect(`mongodb://${serverUrl}/${dbName}`, mongoParams);
     console.log('База данных MongoDB подключена');
   } catch (err) {
     console.log('Проблемы с подключением к MongoDB', err);
@@ -52,7 +54,7 @@ app.use('/', require('./routes/movies'));
 app.use(errorLogger);
 
 app.use('*', () => {
-  throw new NotFoundError('Неверный роутер, страница не найдена');
+  throw new NotFoundError(badRouterMssg);
 });
 
 app.use(handleError);
